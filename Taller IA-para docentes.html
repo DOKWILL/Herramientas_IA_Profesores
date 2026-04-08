@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IA para Docentes: Taller Interactivo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Nunito', sans-serif; background: linear-gradient(135deg, #fafaf9 0%, #f5f5f4 100%); }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+        
+        .flip-card { background-color: transparent; width: 100%; height: 200px; perspective: 1000px; }
+        .flip-card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s; transform-style: preserve-3d; cursor: pointer; }
+        .flip-card:hover .flip-card-inner { transform: rotateY(180deg); }
+        .flip-card-front, .flip-card-back { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: 0.75rem; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .flip-card-front { background-color: #ffffff; color: #1c1917; border: 2px solid #e7e5e4; }
+        .flip-card-back { background: linear-gradient(135deg, #0f766e, #14b8a6); color: white; transform: rotateY(180deg); }
+        
+        .tab-active { border-bottom: 3px solid #ea580c; color: #ea580c; font-weight: 700; }
+        .section-hidden { display: none; }
+        
+        .tool-card { transition: all 0.3s ease; border-left: 4px solid transparent; }
+        .tool-card:hover { transform: translateY(-3px); border-left-color: #0f766e; box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1); }
+        .tool-link { color: #0f766e; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+        .tool-link:hover { text-decoration: underline; color: #0d9488; }
+        
+        .prompt-card { background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border-left: 4px solid #f59e0b; }
+        
+        .gradient-header { background: linear-gradient(135deg, #0f766e 0%, #155e75 100%); }
+        
+        .objective-box { 
+            background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%); 
+            border-left: 4px solid #14b8a6;
+            border-radius: 0 0.75rem 0.75rem 0;
+        }
+        
+        .nav-btn:hover { transform: translateY(-1px); transition: all 0.2s ease; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade { animation: fadeIn 0.4s ease forwards; }
+    </style>
+</head>
+<body class="text-stone-800 antialiased">
+
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl mr-2">🎓</span>
+                    <span class="font-bold text-xl text-teal-800 tracking-tight">IA Educativa</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-2">
+                    <button onclick="navTo('overview')" id="nav-overview" class="nav-btn px-4 py-2 text-sm font-medium text-stone-600 hover:text-orange-600 transition-colors tab-active rounded-lg hover:bg-orange-50">Visión General</button>
+                    <button onclick="navTo('concepts')" id="nav-concepts" class="nav-btn px-4 py-2 text-sm font-medium text-stone-600 hover:text-orange-600 transition-colors rounded-lg hover:bg-orange-50">Conceptos y Ética</button>
+                    <button onclick="navTo('tools')" id="nav-tools" class="nav-btn px-4 py-2 text-sm font-medium text-stone-600 hover:text-orange-600 transition-colors rounded-lg hover:bg-orange-50">Caja de Herramientas</button>
+                    <button onclick="navTo('workshop')" id="nav-workshop" class="nav-btn px-4 py-2 text-sm font-medium text-stone-600 hover:text-orange-600 transition-colors rounded-lg hover:bg-orange-50">Retos Prácticos</button>
+                    <button onclick="navTo('prompts')" id="nav-prompts" class="nav-btn px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-lg transition-all shadow-md">Lab de Prompts</button>
+                </div>
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-stone-500 hover:text-stone-700 focus:outline-none text-2xl p-2 rounded-lg hover:bg-stone-100">
+                        ☰
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-stone-200 shadow-lg">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <button onclick="navTo('overview')" class="block w-full text-left px-3 py-3 rounded-lg text-base font-medium text-stone-700 hover:text-orange-600 hover:bg-orange-50">📊 Visión General</button>
+                <button onclick="navTo('concepts')" class="block w-full text-left px-3 py-3 rounded-lg text-base font-medium text-stone-700 hover:text-orange-600 hover:bg-orange-50">⚖️ Conceptos y Ética</button>
+                <button onclick="navTo('tools')" class="block w-full text-left px-3 py-3 rounded-lg text-base font-medium text-stone-700 hover:text-orange-600 hover:bg-orange-50">🧰 Caja de Herramientas</button>
+                <button onclick="navTo('workshop')" class="block w-full text-left px-3 py-3 rounded-lg text-base font-medium text-stone-700 hover:text-orange-600 hover:bg-orange-50">🎯 Retos Prácticos</button>
+                <button onclick="navTo('prompts')" class="block w-full text-left px-3 py-3 rounded-lg text-base font-medium text-orange-600 font-bold bg-orange-50">✨ Lab de Prompts</button>
+            </div>
+        </div>
+    </nav>
+
+    <header class="gradient-header text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="inline-block bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-6">
+                <span class="text-sm font-semibold">Taller Práctico • 2 horas</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">Inteligencia Artificial para el Aula</h1>
+            <p class="text-xl text-teal-100 font-light max-w-3xl mx-auto leading-relaxed">Herramientas prácticas, éticas y efectivas para transformar tu enseñanza en Educación Infantil y Primaria.</p>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+        <!-- SECCIÓN: VISIÓN GENERAL -->
+        <section id="sec-overview" class="view-section animate-fade">
+            <div class="bg-white rounded-2xl shadow-lg p-6 md:p-10 mb-10 border border-stone-100">
+                <h2 class="text-3xl font-bold text-stone-800 mb-6 pb-4 border-b border-stone-100 flex items-center gap-3">
+                    <span class="text-3xl">🚀</span> Visión General
+                </h2>
+                
+                <!-- Nueva introducción y objetivo -->
+                <div class="mb-10">
+                    <p class="text-lg text-stone-700 mb-6 leading-relaxed">
+                        Este taller está diseñado para docentes que desean integrar la Inteligencia Artificial de forma práctica, ética y efectiva en su práctica diaria. Aprenderás a utilizar herramientas digitales para crear recursos educativos, personalizar contenidos y optimizar tu tiempo, siempre manteniendo el foco en el desarrollo integral de tus estudiantes.
+                    </p>
+                    
+                    <div class="objective-box p-6 rounded-xl">
+                        <h3 class="text-xl font-bold text-teal-800 mb-3 flex items-center gap-2">
+                            <span>🎯</span> Objetivo del Taller
+                        </h3>
+                        <p class="text-stone-700 leading-relaxed">
+                            Al finalizar esta capacitación, podrás identificar y aplicar herramientas de IA para crear recursos pedagógicos innovadores, diseñar actividades personalizadas y fomentar el pensamiento crítico en tus estudiantes, todo en un entorno seguro y centrado en el bienestar infantil.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div class="bg-stone-50 rounded-xl p-6">
+                        <h3 class="text-lg font-semibold text-center mb-5 text-stone-700 flex items-center justify-center gap-2">
+                            <span>⏱️</span> Distribución del Tiempo
+                        </h3>
+                        <div class="chart-container">
+                            <canvas id="timeChart"></canvas>
+                        </div>
+                        <p class="text-sm text-center text-stone-500 mt-4 italic">Cada bloque de 30 minutos está diseñado para maximizar el aprendizaje activo.</p>
+                    </div>
+                    <div class="bg-stone-50 rounded-xl p-6">
+                        <h3 class="text-lg font-semibold text-center mb-5 text-stone-700 flex items-center justify-center gap-2">
+                            <span>🎨</span> Enfoque Pedagógico
+                        </h3>
+                        <div class="chart-container">
+                            <canvas id="focusChart"></canvas>
+                        </div>
+                        <p class="text-sm text-center text-stone-500 mt-4 italic">Más del 50% del tiempo dedicado a práctica guiada y creación de recursos.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: CONCEPTOS Y ÉTICA -->
+        <section id="sec-concepts" class="view-section section-hidden animate-fade">
+            <div class="mb-10">
+                <h2 class="text-3xl font-bold text-stone-800 mb-3 flex items-center gap-3">
+                    <span>💡</span> Desmitificando la IA
+                </h2>
+                <p class="text-stone-600 text-lg">Comprender qué es la IA y establecer pautas éticas claras es el primer paso antes de usar herramientas. Explora la metáfora principal y los pilares del uso ético en el aula.</p>
+            </div>
+
+            <div class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl shadow-md p-8 mb-10 text-center border border-teal-100">
+                <div class="text-6xl mb-5 animate-bounce">👨‍🍳✨</div>
+                <h3 class="text-2xl font-bold text-teal-800 mb-5">La Metáfora del Copiloto: El Sous-Chef Mágico</h3>
+                <blockquote class="text-xl italic text-stone-700 max-w-3xl mx-auto leading-relaxed bg-white/60 p-5 rounded-xl border border-teal-100">
+                    "La IA no es el Chef (el docente), es el asistente que pica la verdura, organiza los ingredientes y sugiere recetas. <strong>El sabor final y la nutrición de los niños dependen siempre del Chef principal</strong>."
+                </blockquote>
+            </div>
+
+            <h3 class="text-2xl font-bold text-stone-800 mb-8 text-center flex items-center justify-center gap-2">
+                <span>⚖️</span> El Rol Ético del Docente
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="text-5xl mb-3">🔒</div>
+                            <h4 class="text-lg font-bold text-stone-800">Privacidad</h4>
+                            <p class="text-sm text-stone-500 mt-2">Pasa el cursor para leer</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4 class="text-lg font-bold mb-3">Regla de Oro</h4>
+                            <p class="text-sm leading-relaxed">Nunca subir fotos de los rostros de los niños ni nombres completos a plataformas de IA. Usa iniciales o descripciones genéricas.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="text-5xl mb-3">🌍</div>
+                            <h4 class="text-lg font-bold text-stone-800">Sesgos</h4>
+                            <p class="text-sm text-stone-500 mt-2">Pasa el cursor para leer</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4 class="text-lg font-bold mb-3">Representación</h4>
+                            <p class="text-sm leading-relaxed">Revisar siempre que las imágenes o textos generados representen diversidad (etnias, capacidades, contextos familiares y culturales).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="text-5xl mb-3">🧐</div>
+                            <h4 class="text-lg font-bold text-stone-800">Curaduría</h4>
+                            <p class="text-sm text-stone-500 mt-2">Pasa el cursor para leer</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4 class="text-lg font-bold mb-3">Filtro Humano</h4>
+                            <p class="text-sm leading-relaxed">La IA puede "alucinar" (inventar datos). El docente es y será siempre el filtro de veracidad, pertinencia pedagógica y seguridad emocional.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECCIÓN: CAJA DE HERRAMIENTAS -->
+        <section id="sec-tools" class="view-section section-hidden animate-fade">
+             <div class="mb-10">
+                <h2 class="text-3xl font-bold text-stone-800 mb-3 flex items-center gap-3">
+                    <span>🧰</span> Caja de Herramientas Docente
+                </h2>
+                <p class="text-stone-600 text-lg">Explora las herramientas organizadas por su función pedagógica. Haz clic en cada tarjeta para ver detalles, ejemplos y acceder directamente a la plataforma.</p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg border border-stone-200 overflow-hidden">
+                <div class="flex border-b border-stone-200 bg-gradient-to-r from-stone-50 to-teal-50 overflow-x-auto">
+                    <button onclick="showToolCategory('creative')" id="tab-creative" class="px-6 py-4 font-semibold text-teal-700 border-b-3 border-teal-600 whitespace-nowrap focus:outline-none hover:bg-teal-50 transition-colors">🎨 Creatividad Visual</button>
+                    <button onclick="showToolCategory('planning')" id="tab-planning" class="px-6 py-4 font-medium text-stone-500 hover:text-stone-700 whitespace-nowrap focus:outline-none hover:bg-stone-100 transition-colors">📋 Planificación y Juego</button>
+                </div>
+
+                <div class="p-8">
+                    <div id="cat-creative" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Populated by JS -->
+                    </div>
+                    
+                    <div id="cat-planning" class="grid grid-cols-1 md:grid-cols-3 gap-6 hidden">
+                         <!-- Populated by JS -->
+                    </div>
+
+                    <div id="tool-detail-panel" class="mt-10 p-8 bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border border-teal-200 hidden">
+                        <div class="flex flex-col md:flex-row items-start gap-6">
+                            <div id="tool-detail-icon" class="text-6xl bg-white rounded-2xl p-4 shadow-md"></div>
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <h3 id="tool-detail-name" class="text-2xl font-bold text-teal-900"></h3>
+                                    <a id="tool-detail-link" href="#" target="_blank" class="tool-link text-sm bg-white px-3 py-1 rounded-full shadow-sm hover:shadow-md transition-shadow">
+                                        <span>🔗</span> Visitar Plataforma
+                                    </a>
+                                </div>
+                                <p id="tool-detail-desc" class="text-stone-700 mb-5 text-lg leading-relaxed"></p>
+                                <div class="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                                    <span class="text-xs font-bold uppercase tracking-wider text-orange-600 mb-2 block flex items-center gap-2">
+                                        <span>💡</span> Ejemplo de Uso en el Aula:
+                                    </span>
+                                    <p id="tool-detail-example" class="text-stone-600 italic leading-relaxed"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: RETOS PRÁCTICOS -->
+        <section id="sec-workshop" class="view-section section-hidden animate-fade">
+            <div class="mb-12 text-center max-w-3xl mx-auto">
+                <h2 class="text-4xl font-bold text-stone-800 mb-5 flex items-center justify-center gap-3">
+                    <span>🛠️</span> Taller "Manos a la Obra"
+                </h2>
+                <p class="text-stone-600 text-xl leading-relaxed">Es hora de aplicar lo aprendido. Divídanse en grupos de 3 y elijan un reto pedagógico real para resolver utilizando las herramientas exploradas.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-5xl mx-auto">
+                
+                <div class="bg-white rounded-2xl shadow-lg border border-stone-200 overflow-hidden hover:shadow-2xl transition-all duration-300 group">
+                    <div class="bg-gradient-to-r from-yellow-400 to-amber-400 h-3 w-full"></div>
+                    <div class="p-10 text-center">
+                        <div class="text-7xl mb-6 group-hover:scale-110 transition-transform">🧸</div>
+                        <h3 class="text-2xl font-bold text-stone-800 mb-4">Reto A: Preescolar</h3>
+                        <p class="text-stone-600 mb-8 text-lg leading-relaxed">Diseñar una actividad de 15 minutos para enseñar el color amarillo usando un personaje creado por IA que los niños puedan colorear y personalizar.</p>
+                        <button onclick="alert('🎉 ¡Excelente elección! En un entorno real, esto abriría un espacio de trabajo colaborativo con plantillas y guías paso a paso.')" class="bg-gradient-to-r from-stone-800 to-stone-700 text-white px-8 py-3 rounded-full font-semibold hover:from-stone-700 hover:to-stone-600 transition-all w-full shadow-md hover:shadow-lg transform hover:-translate-y-1">
+                            Seleccionar Reto →
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-lg border border-stone-200 overflow-hidden hover:shadow-2xl transition-all duration-300 group">
+                    <div class="bg-gradient-to-r from-blue-500 to-indigo-500 h-3 w-full"></div>
+                    <div class="p-10 text-center">
+                        <div class="text-7xl mb-6 group-hover:scale-110 transition-transform">🎒</div>
+                        <h3 class="text-2xl font-bold text-stone-800 mb-4">Reto B: 1º a 3º Primaria</h3>
+                        <p class="text-stone-600 mb-8 text-lg leading-relaxed">Crear una rúbrica de evaluación para un proyecto de huerta escolar y un juego interactivo de 5 preguntas en Quizizz generado por IA para reforzar conceptos.</p>
+                        <button onclick="alert('🎉 ¡Excelente elección! En un entorno real, esto abriría un espacio de trabajo colaborativo con plantillas y guías paso a paso.')" class="bg-gradient-to-r from-stone-800 to-stone-700 text-white px-8 py-3 rounded-full font-semibold hover:from-stone-700 hover:to-stone-600 transition-all w-full shadow-md hover:shadow-lg transform hover:-translate-y-1">
+                            Seleccionar Reto →
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECCIÓN: LABORATORIO DE PROMPTS -->
+        <section id="sec-prompts" class="view-section section-hidden animate-fade">
+            <div class="mb-10 text-center">
+                <h2 class="text-4xl font-bold text-stone-800 mb-4 flex items-center justify-center gap-3">
+                    <span>✨</span> Laboratorio de Prompts de Oro
+                </h2>
+                <p class="text-stone-600 text-lg max-w-3xl mx-auto leading-relaxed">Estos prompts están optimizados y probados para obtener resultados pedagógicos de alta calidad. Selecciona una categoría, copia el prompt y adáptalo a tus necesidades en tu IA favorita.</p>
+            </div>
+
+            <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-stone-200 overflow-hidden">
+                <div class="p-8 border-b border-stone-100 bg-gradient-to-r from-amber-50 to-orange-50">
+                    <label for="prompt-selector" class="block text-sm font-bold text-stone-700 mb-3 flex items-center gap-2">
+                        <span>🔍</span> ¿Qué necesitas crear hoy?
+                    </label>
+                    <select id="prompt-selector" class="w-full bg-white border-2 border-stone-300 rounded-xl shadow-sm py-4 px-5 focus:outline-none focus:ring-3 focus:ring-teal-400 focus:border-teal-500 font-medium text-stone-800 text-lg cursor-pointer transition-all hover:border-teal-400">
+                        <option value="story">📚 Cuentos Personalizados con Valores</option>
+                        <option value="inclusion">🧩 Adaptación Curricular (Inclusión y NEAE)</option>
+                        <option value="gamification">🎮 Situaciones de Aprendizaje Gamificadas</option>
+                        <option value="parents">👨‍👩‍👧‍👦 Comunicación Asertiva con Familias</option>
+                        <option value="assessment">📊 Rúbricas y Evaluación Formativa</option>
+                        <option value="creative">🎨 Actividades Creativas y Artísticas</option>
+                        <option value="stem">🔬 Proyectos STEM para Primaria</option>
+                        <option value="emotional">💙 Educación Socioemocional</option>
+                    </select>
+                </div>
+                
+                <div class="p-10 relative bg-gradient-to-br from-white to-stone-50">
+                    <div class="absolute top-6 left-6 text-6xl text-stone-200 opacity-30 font-serif">"</div>
+                    <div class="absolute bottom-6 right-6 text-6xl text-stone-200 opacity-30 font-serif transform rotate-180">"</div>
+                    
+                    <div class="prompt-card p-6 rounded-xl relative z-10">
+                        <p id="prompt-display" class="text-lg text-stone-800 leading-relaxed font-medium min-h-[140px]">
+                            Selecciona una categoría arriba para explorar un prompt de oro optimizado para tu práctica docente.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-stone-50 to-orange-50 px-8 py-5 flex flex-col sm:flex-row justify-between items-center gap-4 border-t border-stone-100">
+                    <span id="copy-status" class="text-sm font-bold text-teal-700 bg-teal-50 px-4 py-2 rounded-full opacity-0 transition-all transform scale-95">✅ ¡Copiado exitosamente!</span>
+                    <button id="copy-btn" class="flex items-center px-6 py-3 bg-gradient-to-r from-stone-800 to-stone-700 text-white rounded-xl hover:from-stone-700 hover:to-stone-600 transition-all focus:outline-none focus:ring-3 focus:ring-offset-2 focus:ring-stone-500 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                        <span class="mr-3 text-xl">📋</span> Copiar Prompt
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Tips adicionales para prompts -->
+            <div class="mt-10 max-w-4xl mx-auto bg-teal-50 rounded-xl p-6 border border-teal-200">
+                <h4 class="font-bold text-teal-800 mb-3 flex items-center gap-2">
+                    <span>💡</span> Tips para potenciar tus prompts:
+                </h4>
+                <ul class="text-stone-700 space-y-2 text-sm">
+                    <li>• <strong>Sé específico:</strong> Incluye edad, contexto y objetivo de aprendizaje.</li>
+                    <li>• <strong>Define el formato:</strong> Indica si necesitas lista, tabla, cuento o guion.</li>
+                    <li>• <strong>Itera:</strong> Si el resultado no es perfecto, pide ajustes con frases como "hazlo más sencillo" o "agrega ejemplos visuales".</li>
+                    <li>• <strong>Personaliza:</strong> Reemplaza [corchetes] con información real de tu grupo.</li>
+                </ul>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gradient-to-r from-stone-800 to-stone-900 text-stone-300 py-10 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-lg font-medium text-white mb-2">Taller de Inteligencia Artificial para Docentes</p>
+            <p class="text-stone-400 mb-4">Herramientas prácticas para transformar el aula con ética y creatividad</p>
+            <div class="border-t border-stone-700 pt-6">
+                <p class="font-semibold text-white">Desarrollado por <span class="text-teal-400">Ing. Wilson Castellanos</span></p>
+                <p class="text-sm text-stone-500 mt-2">Recursos educativos de libre uso con fines pedagógicos</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const toolsData = {
+            creative: [
+                { 
+                    id: 't1', 
+                    name: 'Canva Magic Studio', 
+                    icon: '🪄', 
+                    desc: 'Genera imágenes desde texto, diseña láminas educativas y crea recursos visuales atractivos con IA integrada.', 
+                    example: 'Para Jardín: Generar un set de 5 dibujos para colorear sobre "Las Emociones", donde el personaje principal sea un monstruo que se parece a la mascota del salón.',
+                    url: 'https://www.canva.com/ai'  // ✅ URL ACTUALIZADA
+                },
+                { 
+                    id: 't2', 
+                    name: 'Storybird', 
+                    icon: '📖', 
+                    desc: 'Crea cuentos ilustrados con IA en segundos, perfectos para trabajar valores, emociones o contenidos curriculares.', 
+                    example: 'Para 3º Primaria: Crear un cuento de misterio donde los niños deban resolver operaciones matemáticas para desbloquear el siguiente párrafo (Storytelling ramificado).',
+                    url: 'https://storybird.com'  // ✅ URL ACTUALIZADA
+                },
+                { 
+                    id: 't3', 
+                    name: 'Adobe Express', 
+                    icon: '🗣️', 
+                    desc: 'Funcionalidad "Animate from Audio" para crear avatares que hablan, ideales para instrucciones o retroalimentación personalizada.', 
+                    example: 'Crear un avatar animado que dé las instrucciones del día con la voz del docente para captar la atención y apoyar a estudiantes con dificultades de lectura.',
+                    url: 'https://www.adobe.com/express/'
+                }
+            ],
+            planning: [
+                { 
+                    id: 't4', 
+                    name: 'Curipod', 
+                    icon: '⚡', 
+                    desc: 'Genera lecciones interactivas completas en segundos: encuestas, nubes de palabras, dibujos y preguntas de reflexión.', 
+                    example: 'Tema "El ciclo del agua" → Crea automáticamente actividades interactivas que los estudiantes pueden responder desde sus dispositivos en tiempo real.',
+                    url: 'https://curipod.com/'
+                },
+                { 
+                    id: 't5', 
+                    name: 'MagicSchool.ai', 
+                    icon: '🧰', 
+                    desc: 'La navaja suiza para docentes: genera rúbricas, adapta contenidos, redacta comunicaciones y crea planes de clase con IA.', 
+                    example: 'Genera una rúbrica analítica para evaluar proyectos de ciencias, con criterios claros y descriptores por nivel de desempeño, lista para imprimir.',
+                    url: 'https://www.magicschool.ai/'
+                },
+                { 
+                    id: 't6', 
+                    name: 'Gamma.app', 
+                    icon: '📊', 
+                    desc: 'Crea presentaciones, documentos y páginas web visualmente impactantes sobre temas complejos en minutos.', 
+                    example: 'Generar una presentación visual interactiva sobre "La Prehistoria" en menos de 2 minutos, con imágenes, preguntas de reflexión y actividades integradas.',
+                    url: 'https://gamma.app/'
+                }
+            ]
+        };
+
+        // Lista ampliada de Prompts de Oro
+        const promptsData = {
+            story: "Actúa como un escritor de literatura infantil experto en educación emocional. Escribe un cuento de 300 palabras para niños de 4-5 años sobre la importancia de compartir y la empatía. El protagonista debe ser un conejo llamado [Nombre del estudiante]. Usa lenguaje sencillo, onomatopeyas y repeticiones rítmicas. Incluye 3 preguntas de reflexión al final para conversar en el círculo de la asamblea.",
+            
+            inclusion: "Tengo una actividad sobre los animales vertebrados para 2º de primaria. Reescribe las instrucciones para un estudiante con Trastorno del Espectro Autista (TEA) nivel 1, utilizando: 1) Pasos numerados y cortos (máx. 5 palabras), 2) Lenguaje directo y literal, 3) Sugerencias de apoyos visuales (pictogramas o imágenes), 4) Tiempos de espera explícitos, y 5) Refuerzos positivos específicos. Mantén el objetivo de aprendizaje original.",
+            
+            gamification: "Crea un guion de 3 misiones progresivas para una clase de 3º de primaria sobre el sistema solar. Cada misión debe incluir: a) Un acertijo lógico o científico para desbloquearla, b) Una actividad de movimiento físico en el aula (kinestésica), c) Un producto tangible que los estudiantes creen (dibujo, maqueta, grabación), y d) Un sistema de recompensas no materiales (insignias verbales, roles especiales). Duración total: 45 minutos.",
+            
+            parents: "Escribe un mensaje empático, claro y profesional para los padres de familia de Transición (5 años), invitándolos a la feria de la ciencia del colegio. El mensaje debe: 1) Destacar que lo más importante es el proceso de exploración y curiosidad de los niños, no el resultado final, 2) Incluir 3 formas concretas en que pueden apoyar desde casa sin presión, 3) Usar un tono cálido y colaborativo, y 4) Finalizar con una pregunta abierta para fomentar la comunicación.",
+            
+            assessment: "Diseña una rúbrica de evaluación formativa para un proyecto de 'Mi familia' en 1º de primaria. La rúbrica debe tener 4 criterios: expresión oral, creatividad, participación y respeto por las ideas de otros. Cada criterio debe tener 3 niveles de desempeño (En proceso, Logrado, Destacado) con descriptores concretos y observables. Incluye una sección para comentarios cualitativos y una autoevaluación infantil con caritas emotivas.",
+            
+            creative: "Genera 5 ideas de actividades artísticas para trabajar el tema 'Los sentidos' con niños de 4 años. Cada actividad debe: 1) Durar máximo 20 minutos, 2) Usar materiales reciclados o de bajo costo, 3) Incluir un momento de exploración sensorial, 4) Permitir la expresión libre sin modelos a copiar, y 5) Finalizar con una pregunta abierta para la reflexión grupal. Formato: lista con título, materiales, pasos breves y propósito pedagógico.",
+            
+            stem: "Diseña un proyecto STEM sencillo para 2º-3º de primaria sobre 'El agua y su ciclo'. El proyecto debe: 1) Durar 3 sesiones de 40 minutos, 2) Incluir una fase de indagación (preguntas), una de experimentación (actividad práctica con materiales seguros) y una de comunicación (presentación creativa), 3) Integrar al menos dos áreas: ciencias y lenguaje o matemáticas, y 4) Incluir una adaptación para estudiantes con dificultades motoras. Proporciona lista de materiales, guía paso a paso y preguntas detonadoras.",
+            
+            emotional: "Crea una secuencia de 4 actividades de 15 minutos cada una para trabajar la identificación y regulación de emociones con niños de 5-6 años. Cada actividad debe: 1) Usar un recurso concreto (cuento, canción, juego de roles, material manipulativo), 2) Incluir un momento de calma o respiración, 3) Permitir la expresión individual y grupal, y 4) Finalizar con una estrategia de 'anclaje' que los niños puedan usar en casa. Formato: tabla con nombre, materiales, pasos y emoción principal trabajada."
+        };
+
+        function navTo(sectionId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('section-hidden'));
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('tab-active');
+                if(!el.classList.contains('bg-orange-600') && !el.classList.contains('from-orange-500')) {
+                    el.classList.add('text-stone-600');
+                    el.classList.remove('text-orange-600');
+                }
+            });
+
+            document.getElementById('sec-' + sectionId).classList.remove('section-hidden');
+            
+            const activeBtn = document.getElementById('nav-' + sectionId);
+            if(activeBtn && !activeBtn.classList.contains('bg-orange-600') && !activeBtn.classList.contains('from-orange-500')) {
+                activeBtn.classList.add('tab-active');
+                activeBtn.classList.remove('text-stone-600');
+            }
+
+            document.getElementById('mobile-menu').classList.add('hidden');
+            
+            if(sectionId === 'overview') {
+                setTimeout(renderCharts, 100);
+            }
+        }
+
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        });
+
+        let chartsRendered = false;
+        function renderCharts() {
+            if(chartsRendered) return;
+            
+            const timeCtx = document.getElementById('timeChart').getContext('2d');
+            new Chart(timeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['1. Fundamentos IA', '2. Creatividad Visual', '3. Planificación', '4. Práctica Guiada'],
+                    datasets: [{
+                        data: [30, 30, 30, 30],
+                        backgroundColor: ['#0f766e', '#0d9488', '#f59e0b', '#ea580c'],
+                        borderWidth: 0,
+                        hoverOffset: 15,
+                        hoverBorderWidth: 3,
+                        hoverBorderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            position: 'bottom', 
+                            labels: { 
+                                font: { family: "'Nunito', sans-serif", size: 11 },
+                                padding: 15,
+                                usePointStyle: true
+                            } 
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 118, 110, 0.95)',
+                            titleFont: { family: "'Nunito', sans-serif", size: 13 },
+                            bodyFont: { family: "'Nunito', sans-serif", size: 12 },
+                            padding: 12,
+                            displayColors: true,
+                            callbacks: {
+                                label: function(context) { 
+                                    return context.label + ': ' + context.parsed + ' min'; 
+                                }
+                            }
+                        }
+                    },
+                    cutout: '65%',
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true
+                    }
+                }
+            });
+
+            const focusCtx = document.getElementById('focusChart').getContext('2d');
+            new Chart(focusCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Fundamentos', 'Reflexión Ética', 'Demostración', 'Práctica Guiada'],
+                    datasets: [{
+                        label: '% del Tiempo',
+                        data: [20, 10, 20, 50],
+                        backgroundColor: ['#d6d3d1', '#a8a29e', '#5eead4', '#14b8a6'],
+                        borderRadius: 6,
+                        borderSkipped: false,
+                        hoverBackgroundColor: ['#b7b3b0', '#8f8a85', '#4dd4c6', '#0d9488']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            max: 60, 
+                            grid: { color: '#f5f5f4', lineWidth: 1 },
+                            ticks: { font: { family: "'Nunito', sans-serif", size: 10 } }
+                        },
+                        x: { 
+                            grid: { display: false },
+                            ticks: { font: { family: "'Nunito', sans-serif", size: 10 } }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(20, 184, 166, 0.95)',
+                            titleFont: { family: "'Nunito', sans-serif", size: 13 },
+                            bodyFont: { family: "'Nunito', sans-serif", size: 12 },
+                            padding: 12,
+                            callbacks: {
+                                label: function(context) { 
+                                    return context.parsed.y + '% de enfoque'; 
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+            chartsRendered = true;
+        }
+
+        function buildToolCards(category) {
+            const container = document.getElementById(`cat-${category}`);
+            container.innerHTML = '';
+            toolsData[category].forEach(tool => {
+                const card = document.createElement('div');
+                card.className = 'tool-card bg-white p-6 rounded-xl border border-stone-200 shadow-sm cursor-pointer flex flex-col items-center text-center';
+                card.onclick = () => showToolDetail(tool);
+                card.innerHTML = `
+                    <div class="text-5xl mb-4 bg-stone-50 rounded-2xl p-4 w-20 h-20 flex items-center justify-center">${tool.icon}</div>
+                    <h4 class="font-bold text-stone-800 text-lg mb-2">${tool.name}</h4>
+                    <p class="text-sm text-stone-500 line-clamp-2">${tool.desc}</p>
+                    <span class="mt-4 text-xs font-semibold text-teal-600 bg-teal-50 px-3 py-1 rounded-full">Ver detalles →</span>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function showToolCategory(category) {
+            document.getElementById('cat-creative').classList.add('hidden');
+            document.getElementById('cat-planning').classList.add('hidden');
+            document.getElementById('tool-detail-panel').classList.add('hidden');
+
+            document.getElementById('tab-creative').className = 'px-6 py-4 font-medium text-stone-500 hover:text-stone-700 whitespace-nowrap focus:outline-none hover:bg-stone-100 transition-colors';
+            document.getElementById('tab-planning').className = 'px-6 py-4 font-medium text-stone-500 hover:text-stone-700 whitespace-nowrap focus:outline-none hover:bg-stone-100 transition-colors';
+
+            document.getElementById(`cat-${category}`).classList.remove('hidden');
+            
+            const activeTab = document.getElementById(`tab-${category}`);
+            activeTab.className = 'px-6 py-4 font-semibold text-teal-700 border-b-3 border-teal-600 whitespace-nowrap focus:outline-none bg-teal-50';
+        }
+
+        function showToolDetail(tool) {
+            document.getElementById('tool-detail-icon').textContent = tool.icon;
+            document.getElementById('tool-detail-name').textContent = tool.name;
+            document.getElementById('tool-detail-desc').textContent = tool.desc;
+            document.getElementById('tool-detail-example').textContent = tool.example;
+            document.getElementById('tool-detail-link').href = tool.url;
+            
+            const panel = document.getElementById('tool-detail-panel');
+            panel.classList.remove('hidden');
+            panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
+            panel.classList.add('ring-2', 'ring-teal-400', 'ring-offset-2');
+            setTimeout(() => {
+                panel.classList.remove('ring-2', 'ring-teal-400', 'ring-offset-2');
+            }, 2000);
+        }
+
+        document.getElementById('prompt-selector').addEventListener('change', (e) => {
+            const selected = e.target.value;
+            const promptText = promptsData[selected];
+            const display = document.getElementById('prompt-display');
+            
+            display.style.opacity = '0';
+            display.style.transform = 'translateY(5px)';
+            setTimeout(() => {
+                display.textContent = promptText;
+                display.style.opacity = '1';
+                display.style.transform = 'translateY(0)';
+            }, 200);
+        });
+
+        document.getElementById('copy-btn').addEventListener('click', () => {
+            const textToCopy = document.getElementById('prompt-display').textContent.trim();
+            if(textToCopy.includes("Selecciona una categoría")) {
+                const status = document.getElementById('copy-status');
+                status.textContent = '⚠️ Primero selecciona un prompt';
+                status.classList.remove('opacity-0', 'bg-teal-50', 'text-teal-700');
+                status.classList.add('opacity-100', 'bg-amber-50', 'text-amber-700', 'scale-100');
+                setTimeout(() => {
+                    status.classList.add('opacity-0', 'scale-95');
+                    status.classList.remove('opacity-100', 'scale-100');
+                    setTimeout(() => {
+                        status.textContent = '✅ ¡Copiado exitosamente!';
+                        status.classList.remove('bg-amber-50', 'text-amber-700');
+                        status.classList.add('bg-teal-50', 'text-teal-700');
+                    }, 300);
+                }, 2500);
+                return;
+            }
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const status = document.getElementById('copy-status');
+                status.classList.remove('opacity-0', 'scale-95');
+                status.classList.add('opacity-100', 'scale-100');
+                
+                const btn = document.getElementById('copy-btn');
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<span class="mr-3 text-xl">✅</span> ¡Copiado!';
+                btn.classList.add('from-teal-600', 'to-teal-700');
+                btn.classList.remove('from-stone-800', 'to-stone-700');
+                
+                setTimeout(() => {
+                    status.classList.add('opacity-0', 'scale-95');
+                    status.classList.remove('opacity-100', 'scale-100');
+                    btn.innerHTML = originalHTML;
+                    btn.classList.remove('from-teal-600', 'to-teal-700');
+                    btn.classList.add('from-stone-800', 'to-stone-700');
+                }, 2500);
+            }).catch(err => {
+                console.error('Error al copiar: ', err);
+                const tempTextArea = document.createElement('textarea');
+                tempTextArea.value = textToCopy;
+                document.body.appendChild(tempTextArea);
+                tempTextArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempTextArea);
+                
+                const status = document.getElementById('copy-status');
+                status.classList.remove('opacity-0');
+                status.classList.add('opacity-100');
+                setTimeout(() => {
+                    status.classList.remove('opacity-100');
+                    status.classList.add('opacity-0');
+                }, 2000);
+            });
+        });
+
+        window.onload = () => {
+            buildToolCards('creative');
+            buildToolCards('planning');
+            
+            document.getElementById('prompt-selector').value = 'story';
+            document.getElementById('prompt-selector').dispatchEvent(new Event('change'));
+            
+            if(!document.getElementById('sec-overview').classList.contains('section-hidden')) {
+                setTimeout(renderCharts, 300);
+            }
+            
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.4s ease';
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+        };
+
+        document.querySelectorAll('#mobile-menu button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                setTimeout(() => {
+                    document.getElementById('mobile-menu').classList.add('hidden');
+                }, 150);
+            });
+        });
+
+    </script>
+</body>
+</html>
