@@ -97,7 +97,6 @@
                     <span class="text-3xl">🚀</span> Visión General
                 </h2>
                 
-                <!-- Nueva introducción y objetivo -->
                 <div class="mb-10">
                     <p class="text-lg text-stone-700 mb-6 leading-relaxed">
                         Este taller está diseñado para docentes que desean integrar la Inteligencia Artificial de forma práctica, ética y efectiva en su práctica diaria. Aprenderás a utilizar herramientas digitales para crear recursos educativos, personalizar contenidos y optimizar tu tiempo, siempre manteniendo el foco en el desarrollo integral de tus estudiantes.
@@ -251,7 +250,7 @@
             </div>
         </section>
 
-        <!-- SECCIÓN: RETOS PRÁCTICOS -->
+        <!-- SECCIÓN: RETOS PRÁCTICOS (Botones eliminados) -->
         <section id="sec-workshop" class="view-section section-hidden animate-fade">
             <div class="mb-12 text-center max-w-3xl mx-auto">
                 <h2 class="text-4xl font-bold text-stone-800 mb-5 flex items-center justify-center gap-3">
@@ -262,30 +261,40 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-5xl mx-auto">
                 
+                <!-- Reto A: Preescolar -->
                 <div class="bg-white rounded-2xl shadow-lg border border-stone-200 overflow-hidden hover:shadow-2xl transition-all duration-300 group">
                     <div class="bg-gradient-to-r from-yellow-400 to-amber-400 h-3 w-full"></div>
                     <div class="p-10 text-center">
                         <div class="text-7xl mb-6 group-hover:scale-110 transition-transform">🧸</div>
                         <h3 class="text-2xl font-bold text-stone-800 mb-4">Reto A: Preescolar</h3>
-                        <p class="text-stone-600 mb-8 text-lg leading-relaxed">Diseñar una actividad de 15 minutos para enseñar el color amarillo usando un personaje creado por IA que los niños puedan colorear y personalizar.</p>
-                        <button onclick="alert('🎉 ¡Excelente elección! En un entorno real, esto abriría un espacio de trabajo colaborativo con plantillas y guías paso a paso.')" class="bg-gradient-to-r from-stone-800 to-stone-700 text-white px-8 py-3 rounded-full font-semibold hover:from-stone-700 hover:to-stone-600 transition-all w-full shadow-md hover:shadow-lg transform hover:-translate-y-1">
-                            Seleccionar Reto →
-                        </button>
+                        <p class="text-stone-600 text-lg leading-relaxed">
+                            Diseñar una actividad de 15 minutos para enseñar el color amarillo usando un personaje creado por IA que los niños puedan colorear y personalizar.
+                        </p>
                     </div>
                 </div>
 
+                <!-- Reto B: 1º a 3º Primaria -->
                 <div class="bg-white rounded-2xl shadow-lg border border-stone-200 overflow-hidden hover:shadow-2xl transition-all duration-300 group">
                     <div class="bg-gradient-to-r from-blue-500 to-indigo-500 h-3 w-full"></div>
                     <div class="p-10 text-center">
                         <div class="text-7xl mb-6 group-hover:scale-110 transition-transform">🎒</div>
                         <h3 class="text-2xl font-bold text-stone-800 mb-4">Reto B: 1º a 3º Primaria</h3>
-                        <p class="text-stone-600 mb-8 text-lg leading-relaxed">Crear una rúbrica de evaluación para un proyecto de huerta escolar y un juego interactivo de 5 preguntas en Quizizz generado por IA para reforzar conceptos.</p>
-                        <button onclick="alert('🎉 ¡Excelente elección! En un entorno real, esto abriría un espacio de trabajo colaborativo con plantillas y guías paso a paso.')" class="bg-gradient-to-r from-stone-800 to-stone-700 text-white px-8 py-3 rounded-full font-semibold hover:from-stone-700 hover:to-stone-600 transition-all w-full shadow-md hover:shadow-lg transform hover:-translate-y-1">
-                            Seleccionar Reto →
-                        </button>
+                        <p class="text-stone-600 text-lg leading-relaxed">
+                            Crear una rúbrica de evaluación para un proyecto de huerta escolar y un juego interactivo de 5 preguntas en Quizizz generado por IA para reforzar conceptos.
+                        </p>
                     </div>
                 </div>
 
+            </div>
+            
+            <!-- Nota informativa para el facilitador -->
+            <div class="mt-12 text-center max-w-3xl mx-auto">
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                    <p class="text-amber-800 text-sm flex items-center justify-center gap-2">
+                        <span>💬</span> 
+                        <strong>Para el facilitador:</strong> Estos retos están diseñados para ser desarrollados en trabajo colaborativo. Guía a los participantes en la selección de herramientas y acompaña el proceso de creación.
+                    </p>
+                </div>
             </div>
         </section>
 
@@ -370,7 +379,7 @@
                     icon: '🪄', 
                     desc: 'Genera imágenes desde texto, diseña láminas educativas y crea recursos visuales atractivos con IA integrada.', 
                     example: 'Para Jardín: Generar un set de 5 dibujos para colorear sobre "Las Emociones", donde el personaje principal sea un monstruo que se parece a la mascota del salón.',
-                    url: 'https://www.canva.com/ai'  // ✅ URL ACTUALIZADA
+                    url: 'https://www.canva.com/ai'
                 },
                 { 
                     id: 't2', 
@@ -378,7 +387,7 @@
                     icon: '📖', 
                     desc: 'Crea cuentos ilustrados con IA en segundos, perfectos para trabajar valores, emociones o contenidos curriculares.', 
                     example: 'Para 3º Primaria: Crear un cuento de misterio donde los niños deban resolver operaciones matemáticas para desbloquear el siguiente párrafo (Storytelling ramificado).',
-                    url: 'https://storybird.com'  // ✅ URL ACTUALIZADA
+                    url: 'https://storybird.com'
                 },
                 { 
                     id: 't3', 
@@ -417,7 +426,6 @@
             ]
         };
 
-        // Lista ampliada de Prompts de Oro
         const promptsData = {
             story: "Actúa como un escritor de literatura infantil experto en educación emocional. Escribe un cuento de 300 palabras para niños de 4-5 años sobre la importancia de compartir y la empatía. El protagonista debe ser un conejo llamado [Nombre del estudiante]. Usa lenguaje sencillo, onomatopeyas y repeticiones rítmicas. Incluye 3 preguntas de reflexión al final para conversar en el círculo de la asamblea.",
             
